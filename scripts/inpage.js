@@ -58,9 +58,8 @@ $('#apm_media_wrapper').apmplayer_ui({
       $('#apm_playlist li[ data-identifier = \'' + playable.identifier + '\']').html(snippet);
 
       $('#apm_playlist li[ data-identifier = \'' + playable.identifier + '\']').click(function () {      
-          
+            
             playGivenStream(this);
-          //$('#apm_player_container').apmplayer_ui('gotoPlaylistItem', $(this).data('identifier'));
       });
 
       $('#apm_playlist li').first().addClass('selected');
@@ -84,6 +83,7 @@ $(document).keydown(function(e){
   //console.log(e.keyCode);
   var selected = $(".selected");
   switch (e.keyCode){
+    case 39:
     case 32: //spacebar
         if ($('#apm_player_play').is(':visible')){
             playGivenStream(selected);
@@ -115,7 +115,8 @@ $(document).keydown(function(e){
 
 function playGivenStream(listItem){
     $('#apm_playlist .playing').removeClass('playing');
-    $(listItem).addClass('playing'); //remove any playing status    
+    $('#apm_playlist li').removeClass('selected');
+    $(listItem).addClass('selected playing'); //remove any playing status    
     var streamIdentifier = $(listItem).data('identifier');
     $('#apm_player_container').apmplayer_ui('gotoPlaylistItem', streamIdentifier);
 }
