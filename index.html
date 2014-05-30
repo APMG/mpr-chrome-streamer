@@ -4,14 +4,165 @@
     <meta charset="utf-8" />
     <title>MPR Media Streamer</title>
     <link jref="vendor/normalize-css/normalize.css" rel='stylesheet' />
+    <link rel="stylesheet" href="vendor/APMPlayer-Internal/skin/apmplayer_base.css" rel='stylesheet' />
+    <link rel="stylesheet" href="vendor/APMPlayer-Internal/skin/jquery-ui-slider.custom.css" rel='stylesheet' />
+    
     <link href="styles/main.css" rel="stylesheet" />
+
 </head>
 <body>
-    <h1>MPR Media Streamer</h1>
+<!--     <h1>MPR Media Streamer</h1>
     <ul>
     	<li><a href="#mprnews">MPR News</a></li>
     	<li><a href="#thecurrent">The Current</a></li>
 		<li><a href="#classicalmpr">Classical MPR</a></li>
-    </ul>
+    </ul> -->
+
+        <div id="apm_media_wrapper" class="clearfix preroll-inactive">
+
+        <header id="apm_header">
+
+            <div id="apm_logo" class="hide-text">
+                <h1>
+                    <a href="http://mprnews.org" class="focusable" target="_blank">
+                        Minnesota Public Radio News
+                    </a>
+                </h1>
+            </div>
+
+            <nav id="apm_nav" class="clearfix">
+                <ul>
+                    <li><a href="#">Link</a></li>
+                    <li><a href="#">Link</a></li>
+                    <li><a href="#">Link</a></li>
+                    <li><a href="#" class="donate">Donate</a></li>
+                </ul>
+            </nav>
+
+        </header>
+
+<!-- BEGIN Player Container: Contains current track's meta info and player control interface -->
+        <div id="apm_player_status" class="rounded box"></div>
+
+        <section id="apm_player_container" class="rounded box clearfix">
+
+            <div id="apm_player_info">
+  
+                <h4>APMPlayer 1.2 playlist demo</h4>
+
+            </div>
+
+            <div id="apm_sponsor_overlay" class="rounded transition">
+                <img src="assets/300x250.jpg">
+
+                <div id="apm_sponsor_overlay_info" class="rounded">
+                    <span id="apm_sponsor_overlay_time">&nbsp;</span>
+                </div>
+            </div>
+
+            <div id="apm_player_controls" class="volume playtime">
+
+                <div id="apm_player_toggle">
+
+                    <div id="apm_player_play" class="player-toggle hide-text">
+                        Play
+                    </div>
+
+                    <div id="apm_player_pause" class="player-toggle hide-text">
+                        Pause
+                    </div>
+
+                    <div id="apm_player_bar_wrapper">
+                        <div id="apm_player_bar_container" class="rounded">
+
+                            <div id="apm_player_bar">
+
+                                <div id="apm_player_loading" class="rounded4"></div>
+
+                            </div>
+
+                        </div>
+
+                        <div id="apm_player_playtime">0:00</div>
+
+
+                    </div>
+
+                    <div id="apm_player_volume_wrapper">
+
+                        <div id="apm_player_volume_status">
+
+                        </div>
+
+                        <div id="apm_player_volume_slider_wrapper">
+
+                            <div id="apm_player_volume_slider_container" class="rounded">
+
+                                <div id="apm_volume_bar">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+<!-- END Player Container -->
+
+
+        <section id="apm_playlist_container" class="rounded box clearfix">
+
+            <div id="apm_playlist">
+
+                <h4>Playlist</h4>
+
+                <ul>
+
+                </ul>
+
+            </div>
+
+            <div id="apm_promo">
+
+            </div>
+
+        </section>
+
+        <section id="apm_ext">
+
+            <div id="apm_sponsor" class="rounded box transition">
+                <h4>Sponsor</h4>
+                <img src="assets/600x200.jpg">
+            </div>
+
+        </section>
+
+        <footer id="apm_footer" class="clearfix">
+            <p>&copy; 2014 American Public Media</p>
+        </footer>
+
+<!--         <div id="test" class="clearfix">
+            <button id="test-overlay" onclick="$('#apm_media_wrapper').toggleClass('preroll-inactive preroll-active');">Overlay</button>
+            <button id="test-volume" onclick="$('#apm_player_controls').toggleClass('no-volume volume');">Volume</button>
+            <button id="test-playtime" onclick="$('#apm_player_controls').toggleClass('no-playtime playtime');">Playtime</button>
+        </div>
+ -->
+    </div>
+	<script type="text/javascript" src='vendor/jquery/dist/jquery.js'></script>
+ 	<script type="text/javascript" src='vendor/soundmanager/script/soundmanager2.js'></script>
+	<script type="text/javascript" src='vendor/APMPlayer-Internal/script/apmplayer-all.min.js'></script>
+<!-- "vendor/APMPlayer-Internal/script/src/apmplayer.js",
+"vendor/APMPlayer-Internal/script/src/custom_schemes.js",
+"vendor/APMPlayer-Internal/script/src/apmplayer_init.js",
+"vendor/APMPlayer-Internal/script/src/apmplayer_ui.jquery.js", -->
+
+    <script type="text/javascript" src='inpage.js'></script>
+
 </body>
 </html>
