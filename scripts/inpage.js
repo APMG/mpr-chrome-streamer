@@ -1,8 +1,4 @@
 
-
-
-console.log('initing player!');
-
 var APMPlayer = APMPlayerFactory.getPlayer();
 APMPlayer.init({
         preferFlash: false
@@ -60,6 +56,8 @@ $('#apm_media_wrapper').apmplayer_ui({
       $('#apm_playlist li[ data-identifier = \'' + playable.identifier + '\']').click(function () {          
           $('#apm_player_container').apmplayer_ui('gotoPlaylistItem', $(this).data('identifier'));
       });
+
+      $('#apm_playlist li').first().addClass('selected');
   },
   onMetadata : function (playable) {
       if (playable.title !== ''
@@ -78,13 +76,38 @@ $('#apm_media_wrapper').apmplayer_ui({
 
 $(document).keydown(function(e){
   console.log(e.keyCode);
-  if (e.keyCode == 32){
-    if ($('#apm_player_play').is(':visible')){
-      console.log('playing!');
-      $('#apm_player_play').click();
-    } else if ($('#apm_player_pause').is(':visible')){
-      console.log('pausing!');
-      $('#apm_player_pause').click();
-    }
+  switch (e.keyCode){
+    case 32: //spacebar
+        if ($('#apm_player_play').is(':visible')){
+          console.log('playing!');
+          $('#apm_player_play').click();
+        } else if ($('#apm_player_pause').is(':visible')){
+          console.log('pausing!');
+          $('#apm_player_pause').click();
+        }
+        break;
+    case 38: //up
+        var selected = $(".selected");
+        $("#apm_playlist li").removeClass("selected");
+        if (selected.prev().length == 0) {
+            selected.siblings().last().addClass("selected");
+        } else {
+            selected.prev().addClass("selected");
+        }
+        break;
+
+    case 40:  //down
+        var selected = $(".selected");
+        $("#apm_playlist li").removeClass("selected");
+        if (selected.next().length == 0) {
+            selected.siblings().first().addClass("selected");
+        } else {
+            selected.next().addClass("selected");
+        }
+        break;
+
   }
+
+  //38 up
+  //40 down
 });

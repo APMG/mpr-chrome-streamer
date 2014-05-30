@@ -551,6 +551,10 @@ only screen and (min-device-pixel-ratio: 1.5) {
     padding: 0;
 }
 
+#apm_playlist li.selected{
+    background-color: rgba(0,0,255,0.2);
+}
+
 .apm_playlist_item {
     border-bottom: 1px dotted #ccc;
     padding: 0.5em 9px;
