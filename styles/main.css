@@ -551,16 +551,21 @@ only screen and (min-device-pixel-ratio: 1.5) {
     padding: 0;
 }
 
-#apm_playlist li.selected{
-    background-color: rgba(0,0,255,0.2);
-}
-
 .apm_playlist_item {
-    border-bottom: 1px dotted #ccc;
+    border: 2px solid #fff;
     padding: 0.5em 9px;
     cursor: pointer;  /* alutz added */
     margin: 0 -9px 0 -9px;
 }
+
+
+.apm_playlist_item.selected{
+    border: 2px solid rgba(0,0,255,0.2);
+}
+.apm_playlist_item.playing{
+    background-color: rgba(0,0,255,0.2);
+}
+
 
 .apm_playlist_item:hover {
     background: #f6f6f6;

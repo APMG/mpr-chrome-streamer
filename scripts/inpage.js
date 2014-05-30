@@ -13,26 +13,32 @@ $('#apm_media_wrapper').apmplayer_ui({
   playables : [
       {
           identifier: 'apm-live-audio:/mpr_news',
-          description: 'live stream',
           program: 'MPR News',
-
       },
       {
           identifier: 'apm-live-audio:/mpr_current',
-          description: 'live stream',
           program: 'The Current'
       },
       {
           identifier: 'apm-live-audio:/mpr_classical',
-          description: 'live stream',
           program: 'Classical MPR'
       },
       {
           identifier: 'apm-live-audio:/mpr_local_current',
-          description: 'live stream',
           program: 'Local Current'
+      },
+      {
+          identifier: 'apm-live-audio:/mpr_wonderground',
+          program: 'Wonderground'
+      },
+      {
+          identifier: 'apm-live-audio:/mpr_radio_heartland',
+          program: 'Radio Heartland'
+      },
+      {
+          identifier: 'apm-live-audio:/mpr_classical_choral',
+          program: 'Classical Chroal'
       }
-
   ],
   /** player-specific functions below **/
   onPlaylistUpdate : function (playable) {
@@ -47,9 +53,7 @@ $('#apm_media_wrapper').apmplayer_ui({
       }
       if (playable.title !== '') {
            snippet += '<div class="apm_playlist_item_info">' + playable.title + '</div>';
-      } else if (playable.description !== '') {
-           snippet += '<div class="apm_playlist_item_info">' + playable.description + '</div>';
-      }
+      } 
 
       $('#apm_playlist li[ data-identifier = \'' + playable.identifier + '\']').html(snippet);
 
@@ -75,21 +79,23 @@ $('#apm_media_wrapper').apmplayer_ui({
 });
 
 $(document).keydown(function(e){
-  console.log(e.keyCode);
+  //console.log(e.keyCode);
+  var selected = $(".selected");
   switch (e.keyCode){
     case 32: //spacebar
+        $('#apm_playlist .playing').removeClass('playing');
         if ($('#apm_player_play').is(':visible')){
-          console.log('playing!');
-          $('#apm_player_play').click();
+          //console.log('playing!');
+          //$('#apm_player_play').click();
+          $('#apm_playlist .selected').addClass('playing').click();
         } else if ($('#apm_player_pause').is(':visible')){
           console.log('pausing!');
           $('#apm_player_pause').click();
         }
         break;
     case 38: //up
-        var selected = $(".selected");
         $("#apm_playlist li").removeClass("selected");
-        if (selected.prev().length == 0) {
+        if (selected.prev().length === 0) {
             selected.siblings().last().addClass("selected");
         } else {
             selected.prev().addClass("selected");
@@ -97,9 +103,8 @@ $(document).keydown(function(e){
         break;
 
     case 40:  //down
-        var selected = $(".selected");
         $("#apm_playlist li").removeClass("selected");
-        if (selected.next().length == 0) {
+        if (selected.next().length === 0) {
             selected.siblings().first().addClass("selected");
         } else {
             selected.next().addClass("selected");
