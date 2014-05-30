@@ -57,8 +57,10 @@ $('#apm_media_wrapper').apmplayer_ui({
 
       $('#apm_playlist li[ data-identifier = \'' + playable.identifier + '\']').html(snippet);
 
-      $('#apm_playlist li[ data-identifier = \'' + playable.identifier + '\']').click(function () {          
-          $('#apm_player_container').apmplayer_ui('gotoPlaylistItem', $(this).data('identifier'));
+      $('#apm_playlist li[ data-identifier = \'' + playable.identifier + '\']').click(function () {      
+          
+            playGivenStream(this);
+          //$('#apm_player_container').apmplayer_ui('gotoPlaylistItem', $(this).data('identifier'));
       });
 
       $('#apm_playlist li').first().addClass('selected');
@@ -83,14 +85,10 @@ $(document).keydown(function(e){
   var selected = $(".selected");
   switch (e.keyCode){
     case 32: //spacebar
-        $('#apm_playlist .playing').removeClass('playing');
         if ($('#apm_player_play').is(':visible')){
-          //console.log('playing!');
-          //$('#apm_player_play').click();
-          $('#apm_playlist .selected').addClass('playing').click();
+            playGivenStream(selected);
         } else if ($('#apm_player_pause').is(':visible')){
-          console.log('pausing!');
-          $('#apm_player_pause').click();
+          stopStream();
         }
         break;
     case 38: //up
@@ -112,7 +110,21 @@ $(document).keydown(function(e){
         break;
 
   }
-
-  //38 up
-  //40 down
 });
+
+
+function playGivenStream(listItem){
+    $('#apm_playlist .playing').removeClass('playing');
+    $(listItem).addClass('playing'); //remove any playing status    
+    var streamIdentifier = $(listItem).data('identifier');
+    $('#apm_player_container').apmplayer_ui('gotoPlaylistItem', streamIdentifier);
+}
+
+function stopStream(){
+    $('#apm_player_pause').click();
+    $('#apm_playlist .playing').removeClass('playing');
+}
+
+function pause(){
+
+}
