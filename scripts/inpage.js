@@ -7,7 +7,7 @@ console.log('initing player!');
 $('#apm_media_wrapper').apmplayer_ui({
   settings : {
       volume : 0.9,
-      autoplay : false
+      autoplay : true
   },
   playables : [
       {

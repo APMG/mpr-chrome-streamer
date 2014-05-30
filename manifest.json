@@ -10,17 +10,7 @@
   "app": {
     "background": {
       "scripts": [
-        // "vendor/jquery/dist/jquery.js", 
-        // "vendor/soundmanager/script/soundmanager2.js",
-        // //"vendor/APMPlayer-Internal/script/apmplayer-all.min.js",
-        // "vendor/APMPlayer-Internal/script/src/apmplayer.js",
-        // "vendor/APMPlayer-Internal/script/src/custom_schemes.js",
-        // "vendor/APMPlayer-Internal/script/src/apmplayer_init.js",
-        // "vendor/APMPlayer-Internal/script/src/apmplayer_ui.jquery.js",
-        "main.js"]
+        "scripts/main.js"]
     }
-  },
-  "permissions": [
-    "audio"
-  ]
+  }
 }
