@@ -13,19 +13,32 @@ $('#apm_media_wrapper').apmplayer_ui({
       {
           identifier: 'apm-live-audio:/mpr_news',
           description: 'live stream',
-          program: '91.1 MPR News'
+          program: 'MPR News',
+
       },
       {
           identifier: 'apm-live-audio:/mpr_current',
           description: 'live stream',
-          program: '89.3 the Current'
+          program: 'The Current'
+      },
+      {
+          identifier: 'apm-live-audio:/mpr_classical',
+          description: 'live stream',
+          program: 'Classical MPR'
+      },
+      {
+          identifier: 'apm-live-audio:/mpr_local_current',
+          description: 'live stream',
+          program: 'Local Current'
       }
 
   ],
   /** player-specific functions below **/
   onPlaylistUpdate : function (playable) {
+      var cleanID = playable.identifier.split(":/")[1];
+      //console.log(cleanID);
       if($('#apm_playlist li[ id = \'' + playable.identifier + '\']').length == 0) {   //create playlist item li, if none exists.
-          $('#apm_playlist ul').append('<li id="' + playable.identifier + '" class="apm_playlist_item"></li>');
+          $('#apm_playlist ul').append('<li id="playable-' + cleanID + '" class="apm_playlist_item" data-identifier="'+playable.identifier+'"></li>');
       }
       var snippet = '';
       if (playable.program !== '') {
@@ -37,10 +50,10 @@ $('#apm_media_wrapper').apmplayer_ui({
            snippet += '<div class="apm_playlist_item_info">' + playable.description + '</div>';
       }
 
-      $('#apm_playlist li[ id = \'' + playable.identifier + '\']').html(snippet);
+      $('#apm_playlist li[ data-identifier = \'' + playable.identifier + '\']').html(snippet);
 
-      $('#apm_playlist li[ id = \'' + playable.identifier + '\']').click(function () {
-          $('#apm_player_container').apmplayer_ui('gotoPlaylistItem', this.id);
+      $('#apm_playlist li[ data-identifier = \'' + playable.identifier + '\']').click(function () {          
+          $('#apm_player_container').apmplayer_ui('gotoPlaylistItem', $(this).data('identifier'));
       });
   },
   onMetadata : function (playable) {
