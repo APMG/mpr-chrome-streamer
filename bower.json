@@ -1,0 +1,22 @@
+{
+    "name": "MPR Chrome Desktop App",
+    "version": "0.1",
+    "dependencies": {
+        "jquery": "2.1.*"
+    },
+    "homepage": "https://github.com/APMG/requiredemo",
+    "authors": [
+        "Justin Heideman <jheideman@mpr.org>"
+    ],
+    "description": "test mpr news project",
+    "main": "styles/main.css",
+    "license": "none",
+    "private": true,
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ]
+}
