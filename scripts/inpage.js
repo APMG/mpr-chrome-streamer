@@ -3,6 +3,11 @@
 
 console.log('initing player!');
 
+var APMPlayer = APMPlayerFactory.getPlayer();
+APMPlayer.init({
+        preferFlash: false
+
+});
 
 $('#apm_media_wrapper').apmplayer_ui({
   settings : {
@@ -68,5 +73,18 @@ $('#apm_media_wrapper').apmplayer_ui({
           }
           $('#apm_player_info').html(snippet);
       }
+  }
+});
+
+$(document).keydown(function(e){
+  console.log(e.keyCode);
+  if (e.keyCode == 32){
+    if ($('#apm_player_play').is(':visible')){
+      console.log('playing!');
+      $('#apm_player_play').click();
+    } else if ($('#apm_player_pause').is(':visible')){
+      console.log('pausing!');
+      $('#apm_player_pause').click();
+    }
   }
 });
