@@ -1,0 +1,36 @@
+{
+  "name": "APMPlayer",
+  "version": "1.3.0",
+  "homepage": "https://github.com/APMG/APMPlayer-Internal",
+  "authors": [
+    "William Johnston <wjohnston@mpr.org>"
+  ],
+  "description": "APM's player module",
+  "main": [
+    "script/src/apmplayer.js",
+    "script/src/custom_schemes.js",
+    "script/src/apmplayer_init.js",
+    "script/src/apmplayer_ui.jquery.js",
+    "script/src/apmplayer_webtrends10.js",
+    "script/src/adswizz.js"
+  ],
+  "dependencies": {
+    "soundManager2": "https://github.com/scottschiller/SoundManager2/tree/V2.97a.20130512",
+    "modernizr": "~2.5.3",
+    "jquery-ui": ">=1.9.2",
+    "jquery": ">=1.9.2"
+  },
+  "license": "BSD-3",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "script/lib",
+    "examples",
+    "docs",
+    "util",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

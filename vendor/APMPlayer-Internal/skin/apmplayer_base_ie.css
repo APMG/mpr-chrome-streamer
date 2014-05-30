@@ -1,0 +1,18 @@
+#apm_sponsor_overlay {
+    display: none;
+}
+
+.preroll-active #apm_sponsor_overlay, .preroll-active #apm_sponsor_info {
+    display: block;
+}
+
+.preroll-active #apm_sponsor {
+    display: none;
+}
+
+#apm_sponsor_overlay_info {
+	line-height: 16px;
+	display: none;
+    position: relative;
+    bottom: 0px;
+}
