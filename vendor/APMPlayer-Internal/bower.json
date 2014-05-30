@@ -16,7 +16,7 @@
   ],
   "dependencies": {
     "soundManager2": "https://github.com/scottschiller/SoundManager2/tree/V2.97a.20130512",
-    "modernizr": "~2.5.3",
+    "modernizr": "~2.7.1",
     "jquery-ui": ">=1.9.2",
     "jquery": ">=1.9.2"
   },

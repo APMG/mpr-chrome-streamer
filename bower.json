@@ -3,8 +3,7 @@
     "version": "0.1",
     "dependencies": {
         "jquery": "2.1.*",
-	    "soundmanager": "*",
-        "APMPlayer-Internal": "git@github.com:APMG/APMPlayer-Internal.git#webtrends-amd"
+        "APMPlayer-Internal": "git@github.com:APMG/APMPlayer-Internal.git"
     },
     "homepage": "https://github.com/APMG/requiredemo",
     "authors": [

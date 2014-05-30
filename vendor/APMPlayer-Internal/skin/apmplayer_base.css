@@ -1022,7 +1022,29 @@ h4 {
 }
 
 
+/* Segment display */
 
+.apm_playlist_item_segments {
+    font-size: 0.8em;
+}
+
+.apm_playlist_item_segments .apm_playlist_item_segment {
+    padding: 2px 0 2px 9px;
+}
+
+.apm_playlist_item_segments .apm_playlist_item_segment:hover {
+    background-color: #D1D1D1;
+}
+
+.apm_playlist_item_segments .apm_playlist_item_segment.apm_playlist_segment_active {
+    border-left: 2px solid #7B7B7B;
+    padding-left: 7px;
+}
+
+/* Use modernizr to hide segments on mobile for the time being. Rather stupidly detected via the existance of a touch API. */
+html.apmtouch .apm_playlist_item_segments {
+    display: none;
+}
 
 
 /* ==|== media queries ======================================================

@@ -1,13 +1,13 @@
 //initialization w/ custom configuration short-cuts (not required)
 var scheme_map = {
-    apm_audio : {
+    "apm-audio" : {
         flash_server_url  : 'rtmp://ondemand-rtmp.stream.publicradio.org/music',
         flash_file_prefix : 'mp3:ondemand',
         http_file_prefix  : 'http://ondemand-http.stream.publicradio.org',
         buffer_time : 3,
         type : 'audio'
     },
-    apm_live_audio : {
+    "apm-live-audio" : {
         mpr_news : {
             flash_server_url : 'rtmp://wowza.stream.publicradio.org/news',
             flash_file_path : 'news.stream',
@@ -108,5 +108,12 @@ var scheme_map = {
         }
     }
 };
+
+// Compatibility with prior versions.
+// Change made due to underscores not being valid
+// http://tools.ietf.org/html/rfc3986#page-17
+scheme_map.apm_audio = scheme_map["apm-audio"];
+scheme_map.apm_live_audio = scheme_map["apm-live-audio"];
+
 var custom_schemes = APMPlayerFactory.getCustomSchemes();
 custom_schemes.init(scheme_map);

@@ -75,7 +75,7 @@
                 }
             },
             fetchMetadata : function (playable) {
-                $.getJSON('http://www.publicradio.org/tools/api/audio/metadata/?callback=?', 'id=' + playable.identifier, player_ui.events.onFetchMetadata);
+                $.getJSON('http://api.mpr.org/audio/v2/?callback=?', 'id=' + playable.identifier, player_ui.events.onFetchMetadata);
             }
         };
 
@@ -103,6 +103,9 @@
                 playtime: "apm_player_playtime",
                 playlist: "apm_playlist",
                 playlistNowPlayingCls: "nowplaying",
+                playlist_segments: "apm_playlist_item_segments",
+                playlist_segment: "apm_playlist_item_segment",
+                playlist_segment_active: "apm_playlist_segment_active",
                 sponsorOverlayActiveCls: "preroll-active",
                 sponsorOverlayInactiveCls: "preroll-inactive",
                 sponsorTimer: "apm_sponsor_overlay_time",
@@ -612,7 +615,7 @@
                 player_ui.playlist.onUpdate(playable);
 
                 if (player_ui.main.settings.fetchMetadata === true) {
-                    if (playable.isCustomScheme('apm_audio')) {               //only look-up custom APM media items
+                    if (playable.isCustomScheme('apm-audio') || playable.isCustomScheme('apm_audio')) {               //only look-up custom APM media items
                         player_ui.main.fetchMetadata(playable);
                     } else {
                         player_ui.main.updateAutoPlay(playable);
@@ -623,10 +626,10 @@
                 APMPlayer.debug.log('sorry, there was a problem with the parameters passed and a valid playable could not be created.', APMPlayer.debug.type.warn, 'APMPlayerUI');
             }
         };
-        player_ui.playlist.gotoItem = function (identifer) {
-            if(APMPlayer.state.current() === APMPlayer.state.type.STOPPED || player_ui.playlist.current().identifier !== identifer) {
+        player_ui.playlist.gotoItem = function (identifier, start_position) {
+            if (APMPlayer.state.current() === APMPlayer.state.type.STOPPED || player_ui.playlist.current().identifier !== identifier) {
                 player_ui.controls.seeker.disable();
-                player_ui.playlist.goto(identifer);
+                player_ui.playlist.goto(identifier, start_position);
             }
         };
         player_ui.playlist.addNowPlaying = function (playable) {
@@ -639,6 +642,7 @@
         player_ui.playlist.onCurrentChange = function (previous_playable) {
             if (previous_playable !== null) {   //only null on first item added to playlist.
                 player_ui.playlist.removeNowPlaying(previous_playable);
+                player_ui.playlist.removeActiveSegments(previous_playable);
                 player_ui.main.play();
             }
             var current_playable = player_ui.playlist.current();
@@ -647,6 +651,18 @@
         };
         player_ui.playlist.events.addListener(APMPlayer.events.type.PLAYLIST_CURRENT_CHANGE, player_ui.playlist.onCurrentChange);
 
+        player_ui.playlist.removeActiveSegments = function (playable) {
+            // Unset all segment active states
+            $(player_ui.parent_id + ' #' + player_ui.skin.css.playlist + ' li[id=\'' + playable.identifier + '\']' + ' .' + player_ui.skin.css.playlist_segments + ' .' + player_ui.skin.css.playlist_segment).removeClass(player_ui.skin.css.playlist_segment_active);
+        }
+        player_ui.playlist.addActiveSegment = function (playable, segment) {
+            $(player_ui.parent_id + ' #' + player_ui.skin.css.playlist + ' li[id=\'' + playable.identifier + '\']' + ' .' + player_ui.skin.css.playlist_segments + ' #segment-' + segment.start_time).addClass(player_ui.skin.css.playlist_segment_active);
+        }
+        player_ui.playlist.onSegmentChanged = function (playable, segment) {
+            player_ui.playlist.removeActiveSegments(playable);
+            player_ui.playlist.addActiveSegment(playable, segment);
+        }
+        APMPlayer.events.addListener(APMPlayer.events.type.SEGMENT_CHANGED, player_ui.playlist.onSegmentChanged);
 
         /**
          * underwriting
@@ -736,7 +752,7 @@
      * $('#apm_media_wrapper').apmplayer_ui({
      *    playables : [
      *        {
-     *            identifier: 'apm_audio:/performance_today/2012/04/24/pt2_20120424_128.mp3'
+     *            identifier: 'apm-audio:/performance_today/2012/04/24/pt2_20120424_128.mp3'
      *        }
      *    ]
      * });
@@ -764,7 +780,7 @@
      *    },
      *    playables : [
      *       {
-     *          identifier: 'apm_live_audio:/mpr_current',
+     *          identifier: 'apm-live-audio:/mpr_current',
      *          description: 'live streaming from 89.3',
      *          program: '89.3 the Current',
      *          host: 'Mark Wheat',
@@ -773,7 +789,7 @@
      *          image_sm: 'http://mpr.org/images/current.gif'
      *       },
      *       {
-     *           identifier: 'apm_audio:/performance_today/2012/04/24/pt2_20120424_128.mp3',
+     *           identifier: 'apm-audio:/performance_today/2012/04/24/pt2_20120424_128.mp3',
      *           program: 'on Being',
      *           downloadable: false
      *       }
@@ -820,6 +836,25 @@
                 gotoPlaylistItem : function (identifier) {
                     if (typeof window.apmplayer_ui !== 'undefined') {
                         window.apmplayer_ui.playlist.gotoItem(identifier);
+                    } else {
+                        APMPlayer.debug.log('you must first initialize apmplayer_ui before calling methods on it.', APMPlayer.debug.type.error, 'APMPlayerUI');
+                    }
+                },
+                /**
+                 * @name setPosition
+                 *
+                 * @description changes position in {@link Playable}, and switches playables if not set. Also plays if stopped.
+                 * @example $('#player_container_div').apmplayer_ui('setPosition', position);
+                 * @methodOf $.fn.apmplayer_ui
+                 */
+                setPosition : function (identifier, position) {
+                    if (typeof window.apmplayer_ui !== 'undefined') {
+                        if (window.apmplayer_ui.playlist.current().identifier !== identifier || (window.apmplayer_ui.playlist.current().identifier === identifier && APMPlayer.state.current() === APMPlayer.state.type.STOPPED)) {
+                            window.apmplayer_ui.playlist.gotoItem(identifier, position);
+                        } else {
+                            window.APMPlayer.setPosition(position);
+                        }
+                        APMPlayer.debug.log('$.fn.apmplayer_ui.setPosition() - Set playable position to ' + position, APMPlayer.debug.type.info, 'APMPlayerUI');
                     } else {
                         APMPlayer.debug.log('you must first initialize apmplayer_ui before calling methods on it.', APMPlayer.debug.type.error, 'APMPlayerUI');
                     }

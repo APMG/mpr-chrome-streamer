@@ -1,5 +1,6 @@
 {
   "name": "APMPlayer",
+  "version": "1.4.0",
   "homepage": "https://github.com/APMG/APMPlayer-Internal",
   "authors": [
     "William Johnston <wjohnston@mpr.org>"
@@ -15,7 +16,7 @@
   ],
   "dependencies": {
     "soundManager2": "https://github.com/scottschiller/SoundManager2/tree/V2.97a.20130512",
-    "modernizr": "~2.5.3",
+    "modernizr": "~2.7.1",
     "jquery-ui": ">=1.9.2",
     "jquery": ">=1.9.2"
   },
@@ -32,13 +33,13 @@
     "test",
     "tests"
   ],
-  "_release": "573ee63059",
+  "_release": "1.4.0",
   "_resolution": {
-    "type": "branch",
-    "branch": "webtrends-amd",
-    "commit": "573ee6305975ea2f80a1331887855060c9bac838"
+    "type": "version",
+    "tag": "1.4.0",
+    "commit": "b94afa57e6c98ffb7c901674b48e8868fdc9aa67"
   },
   "_source": "git@github.com:APMG/APMPlayer-Internal.git",
-  "_target": "webtrends-amd",
+  "_target": "*",
   "_originalSource": "git@github.com:APMG/APMPlayer-Internal.git"
 }

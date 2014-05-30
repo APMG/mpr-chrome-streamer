@@ -243,12 +243,20 @@ if (typeof APMPlayerFactory === 'undefined') {
                  * @example Events.type.VOLUME_UPDATED
                  * @fieldOf Events
                  */
-                VOLUME_UPDATED : 'VOLUME_UPDATED'
+                VOLUME_UPDATED : 'VOLUME_UPDATED',
+                /**
+                 * @name SEGMENT_CHANGED
+                 * @event
+                 * @description fires when segment changes
+                 * @example Events.type.SEGMENT_CHANGED
+                 * @fieldOf Events
+                 */
+                SEGMENT_CHANGED : 'SEGMENT_CHANGED'
             };
             /**
              * @name handlers
              * @description array of event handler objects in form of { 'handler_name', function() {} }.
-             * @type Array[Object]
+             * @type Array.<Object>
              * @fieldOf Events
              */
             this.handlers = [];
@@ -258,7 +266,7 @@ if (typeof APMPlayerFactory === 'undefined') {
              * @name trigger
              * @description fires all events handlers that match 'name' and passes eventArgs to each handler.
              * @param {string} name name of event to fire
-             * @param {Object} eventArgs object literal to pass to all functon handlers
+             * @param {Object} eventArgs object literal to pass to all function handlers. Additional arguments will also be passed.
              *
              * @example APMPlayer.events.trigger(player.events.type.MEDIA_READY, { 'identifier' : this.ID });
              *
@@ -268,7 +276,8 @@ if (typeof APMPlayerFactory === 'undefined') {
                 var i;
                 for (i = 0; i < this.handlers.length; i += 1) {
                     if (this.handlers[i].eventName === name) {
-                        this.handlers[i].eventHandler.call(this, eventArgs);
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        this.handlers[i].eventHandler.apply(this, args);
                     }
                 }
             },
@@ -355,7 +364,7 @@ if (typeof APMPlayerFactory === 'undefined') {
          * @description holds an ordered-array of all possible playback mechanisms supported
          *
          * @property {Object} type all possible playback mechanism types (currently FLASH and HTML5)
-         * @property {Array[Object]} solutions array of playback mechanisms, ordered by priority to use as a solution.  Currently FLASH is the primary playback mechanism.  If the primary solution is deemed unacceptable for given platform, that first solution is removed and the next solution becomes first and primary.
+         * @property {Array.<Object>} solutions array of playback mechanisms, ordered by priority to use as a solution.  Currently FLASH is the primary playback mechanism.  If the primary solution is deemed unacceptable for given platform, that first solution is removed and the next solution becomes first and primary.
          */
         var PlaybackMechanism = function () {
             this.type = {
@@ -466,7 +475,7 @@ if (typeof APMPlayerFactory === 'undefined') {
              *
              * @example
              * var scheme_map = {
-             *    apm_audio : {
+             *    apm-audio : {
              *      flash_server_url  : 'rtmp://flash.server.org/music',
              *      flash_file_prefix : 'mp3:flashprefix',
              *      http_file_prefix  : 'http://download.org',
@@ -493,11 +502,11 @@ if (typeof APMPlayerFactory === 'undefined') {
              * custom_schemes.init(scheme_map);
              *
              * ** in this example above,
-             * ** a Playable w/ identifer 'apm_audio:/marketplace/2012/04/18/morning_report.mp3'
+             * ** a Playable w/ identifer 'apm-audio:/marketplace/2012/04/18/morning_report.mp3'
              * ** would translate to:
              *
              * var playable = {
-             *      identifier : 'apm_audio:/marketplace/2012/04/18/morning_report.mp3',
+             *      identifier : 'apm-audio:/marketplace/2012/04/18/morning_report.mp3',
              *      flash_server_url  : 'rtmp://flash.server.org/music',
              *      flash_file_path : 'mp3:flashprefix/marketplace/2012/04/18/morning_report.mp3',
              *      http_file_path  : 'http://download.org/marketplace/2012/04/18/morning_report.mp3',
@@ -626,6 +635,8 @@ if (typeof APMPlayerFactory === 'undefined') {
          * @property {number} position the current position, in miliseconds for the Playable
          * @property {number} percent_played percentage of the playable that's been played (position/duration)
          * @property {number} percent_loaded percentage of the playable that's been loaded (percent of total duration)
+         * @property {number} start_time the timestamp in milliseconds at which playback will start. This doesn't work on mobile.
+         * @property {number} end_time the timestamp in milliseconds at which playback will end.
          *
          */
         var Playable = function (params) {
@@ -660,6 +671,13 @@ if (typeof APMPlayerFactory === 'undefined') {
             this.percent_played = 0;
             this.percent_loaded = 0;
 
+            // playback duration
+            this.start_time = null;
+            this.end_time = null;
+
+            // Segments within the playable audio.
+            this.segments = [];
+
             //state
             this.state = 'STOPPED';   //provided as courtesy to webTrends tracking.
 
@@ -679,6 +697,13 @@ if (typeof APMPlayerFactory === 'undefined') {
                 if (custom_schemes.hasSchemes()) {
                     var configParams = custom_schemes.getValues(playable_self.identifier);
                     playable_self.setMembers(configParams);
+                }
+
+                // Set position to start time on initial load. Subsequently, playable.reset() will set this.
+                if (playable_self.start_time) {
+                    playable_self.position = playable_self.start_time;
+                } else {
+                    playable_self.position = 0;
                 }
 
             }());
@@ -736,7 +761,11 @@ if (typeof APMPlayerFactory === 'undefined') {
              * @methodOf Playable
              */
             reset : function () {
-                this.position = 0;
+                if (this.start_time) {
+                    this.position = this.start_time;
+                } else {
+                    this.position = 0;
+                }
                 this.percent_played = 0;
                 this.percent_loaded = 0;
             },
@@ -764,7 +793,12 @@ if (typeof APMPlayerFactory === 'undefined') {
              */
             setMembers : function (params) {
                 for (var prop in params) {
-                    if (params.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
+                    if (prop === 'segments') {
+                        // Handle segments as a special case.
+                        for (var segment in params[prop]) {
+                            this[prop].push(new PlayableSegment(params[prop][segment]));
+                        }
+                    } else if (params.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
                         this[prop] = params[prop];
                     }
                 }
@@ -818,6 +852,57 @@ if (typeof APMPlayerFactory === 'undefined') {
         };
         UnderwritingPlayable.prototype = Playable.prototype;
 
+
+        /**
+         * @name PlayableSegment
+         * @description segments within a {@link Playable}. Used to click around in audio.
+         *
+         * @param {Object} params an object containing attributes matching those in the Field Summary.
+         * @property {integer} start_time The beginning of this segment in milliseconds.
+         * @property {string} title The title of this segment.
+         * @property {string} html_class A html_class to differentiate segments in the front-end.
+         * @property {boolean} active Whether this segment is presently playing. (dynamically set)
+         *
+         * @class
+         */
+        var PlayableSegment = function (params) {
+            var segment_self = this;
+
+            // Metadata
+            this.start_time = 0;
+            this.title = '';
+            this.html_class = '';
+
+            // Dynamic Properties
+            this.active = false;
+
+            (function () {  //set members
+
+                //first, set any values passed in via the playable.
+                segment_self.setMembers(params);
+
+            }());
+
+            return this;
+        };
+        PlayableSegment.prototype = {
+            /**
+             * @name setMembers
+             *
+             * @description finds and sets any valid key, value pair-- will override anything that currently exists in that field.
+             * @example playable.setMembers({object})
+             * @methodOf Playable
+             */
+            setMembers : function (params) {
+                for (var prop in params) {
+                    if (params.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
+                        this[prop] = params[prop];
+                    }
+                }
+            }
+        };
+
+
         /**
          * @name APMPlayer
          * @description main container for Audio/Video playback.
@@ -825,6 +910,9 @@ if (typeof APMPlayerFactory === 'undefined') {
          */
         var APMPlayer = function () {
             var player = this;
+
+            // This should be next.version-dev. Remove -dev when releasing.
+            this.apmplayer_version = '1.4.0';
 
             var Audio = function () {
                 this.lib = soundManager;
@@ -835,21 +923,46 @@ if (typeof APMPlayerFactory === 'undefined') {
                     if (player.audio.init_status === false) {
 
                         // Set player defaults.
-                        settings = $.extend({
+                        settings = jQuery.extend({
                             preferFlash : true, // Whether to prefer flash over html5.
                             swf : false // The path to the flash objects. Will try to guess when false.
                         }, settings);
 
                         // Detect Safari 7 and use HTML5 to work around the Safari Power Saver feature.
-                        var isSafari7 = (/7.0 Safari/).test(navigator.userAgent) && (/Apple Computer/).test(navigator.vendor);
-
+                        var isSafariPS = (/[7.\d|6.1](.\d+)? Safari/).test(navigator.userAgent) && (/Apple Computer/).test(navigator.vendor);
+                        /*
+                         * Check if we are passing in a relative or absolute url for the swf and if so is it on another domain
+                         */
+                        var isCrossDomain = function () {
+                            var bool = false;
+                            var swfDomain;
+                            var re = /https?:\/\/[^\s\/]+/;
+                            // if no settings.swf is passed in check if apmplayer.js is on the same domain as the browser
+                            // Assumption:  apmplayer js will be on the same domain as the swf file
+                            if(settings.swf === false) {
+                                var playerFileNames = ['apmplayer.js', 'apmplayer-all.min.js'];
+                                var swfHttp;
+                                for(var i in playerFileNames) {
+                                    swfHttp = player.util.getLoadedScriptPathByFileName(playerFileNames[i]);
+                                    if(swfHttp) {
+                                        swfDomain = swfHttp.match(re);
+                                    }
+                                }
+                            }
+                            else {  // check if swf path is an absolute or relative url, and if it's absolute see if it's crossdomain.
+                                swfDomain =  settings.swf.match(re);
+                            }
+                            if(swfDomain !== null) {
+                                // if browser location domain is not the same as swfDomain, isCrossDomain should be true.
+                                bool = (swfDomain[0] === window.location.origin) ? false : true;
+                             }
+                            return bool;
+                        };
                         //soundManager2 settings
                         this.lib.flashVersion = 9;
-
-                        // TODO: Make this conditional based on cross domain swf.
-                        if (isSafari7 && settings.preferFlash) {
+                        if (isSafariPS && settings.preferFlash && isCrossDomain()) {
                             this.lib.preferFlash = false;
-                            Debug.log('Audio.init() -- setting to HTML5-only due to Safari 7.', Debug.type.info);
+                            Debug.log('Audio.init() -- setting to HTML5-only due to Safari 6.1 or 7.x Power Manager settings.', Debug.type.info);
                         } else {
                             this.lib.preferFlash = settings.preferFlash;
                             if (settings.preferFlash) {
@@ -956,7 +1069,7 @@ if (typeof APMPlayerFactory === 'undefined') {
                                         }
                                     },
                                     onload : function(success) {
-                                        if(success === false) {   //progressive download file failed to be loaded..
+                                        if (success === false) {   //progressive download file failed to be loaded..
                                             var playable = player.current_playable;
                                             player.events.trigger(player.events.type.MISSING_FILE, playable);
                                             Debug.log('Audio.load.createSound.onload() - could not load \'' + playable.http_file_path + '\' over progressive download', Debug.type.error);
@@ -1045,6 +1158,19 @@ if (typeof APMPlayerFactory === 'undefined') {
                                     this.mute();
                                 }
                                 Debug.log('Audio.play.onplay() PLAYING fired', Debug.type.info);
+
+                                // Set up watcher for end time.
+                                if (playable.end_time && playable.end_time < playable.duration) {
+                                    this.onPosition(playable.end_time, function (eventPosition) {
+                                        player.audio.pause(playable);
+                                        player.current_playable.reset();
+                                        player.state.set(player.state.type.STOPPED, playable);
+                                        player.events.trigger(player.events.type.FINISHED, playable);
+                                        Debug.log('Audio reached end point, stopped.', Debug.type.info);
+                                    });
+
+                                    Debug.log('Audio.play.onplay() Set up watcher for end time of ' + playable.end_time, Debug.type.info);
+                                }
                             },
                             onpause: function () {
                                 player.state.set(player.state.type.PAUSED, playable);
@@ -1074,6 +1200,14 @@ if (typeof APMPlayerFactory === 'undefined') {
                             whileplaying : function () {
 
                                 var playable = player.current_playable;
+
+                                // Work around HTML5 issue where soundmanager doesn't set position passed as property.
+                                // Checking range to avoid issues where it is rounded to within a second.
+                                // if (Math.ceil(this.position)+1 < Math.ceil(playable.position)) {
+                                //     Debug.log('Audio.play.whileplaying() Overriding position with playable position. Position: ' + Math.ceil(this.position) + ', playable.position: ' + Math.ceil(playable.position), Debug.type.info);
+                                //     this.setPosition(playable.position);
+                                // }
+
                                 if (playable.type === MediaTypes.type.LIVE_AUDIO) {
                                     playable.percent_played = 1;
                                     playable.duration = 0;
@@ -1116,6 +1250,27 @@ if (typeof APMPlayerFactory === 'undefined') {
                                     } else {
                                         //Debug.log('Audio.play.whileplaying() POSITION_UPDATE fired. ' + playable.percent_loaded + '% ' + playable.percent_played, Debug.type.info);
                                         player.events.trigger(player.events.type.POSITION_UPDATE, playable);
+                                    }
+
+                                    // Set active segment.
+                                    for (var i = playable.segments.length - 1; i >= 0; i--) {
+                                        // Assuming that this is ordered by timestamp in ascending order.
+                                        if (playable.segments[i].start_time <= this.position) {
+
+                                            // If this isn't already active, set to active and change all other segments to false.
+                                            if (playable.segments[i].active !== true) {
+                                                for (var n in playable.segments) {
+                                                    playable.segments[n].active = false;
+                                                }
+
+                                                playable.segments[i].active = true;
+
+                                                player.events.trigger(player.events.type.SEGMENT_CHANGED, playable, playable.segments[i]);
+                                                Debug.log('whileplaying() active segment changed.', Debug.type.info);
+                                            }
+
+                                            break;
+                                        }
                                     }
                                 }
                             },
@@ -1161,21 +1316,35 @@ if (typeof APMPlayerFactory === 'undefined') {
                     return false;
                 },
 
-                seek : function (playable, percent_decimal) {
+                setPosition : function (playable, milliseconds) {
                     var sound = this.lib.getSoundById(playable.identifier);
                     if (sound) {
-                        if (playable.duration) {
-                            Debug.log('Audio.seek() seeking to \'' + percent_decimal + '\' of sound \'' + playable.identifier + '\'', Debug.type.info);
-                            var msec = percent_decimal * playable.duration;
-                            sound.setPosition(msec);
-                            return true;
+                        Debug.log('Audio.setPosition() setting to \'' + milliseconds + '\' milliseconds in sound \'' + playable.identifier + '\'', Debug.type.info);
+                        sound.setPosition(milliseconds);
+
+                        // If position is greater than the end_time, remove the onPosition callback.
+                        if (playable.end_time <= milliseconds) {
+                            sound.clearOnPosition(playable.end_time);
+                            Debug.log('Audio.setPosition() end_time callback has been unset due to seeking past it.', Debug.type.info);
                         }
+
+                        return true;
+                    }
+
+                    Debug.log('Audio.setPosition() sound \'' + playable.identifier + '\' is unknown.', Debug.type.warn);
+                    return false;
+                },
+
+                seek : function (playable, percent_decimal) {
+                    if (playable.duration) {
+                        Debug.log('Audio.seek() seeking to \'' + percent_decimal + '\' of sound \'' + playable.identifier + '\'', Debug.type.info);
+                        var msec = percent_decimal * playable.duration;
+                        player.audio.setPosition(playable, msec);
+                        return true;
+                    } else {
                         Debug.log('Audio.seek() Error.  Could not seek. duration of \'' + playable.identifier + '\' is unknown.', Debug.type.warn);
                         return false;
                     }
-
-                    Debug.log('Audio.seek() sound \'' + playable.identifier + '\' is unknown.', Debug.type.warn);
-                    return false;
                 },
 
                 mute : function (playable) {
@@ -1267,7 +1436,7 @@ if (typeof APMPlayerFactory === 'undefined') {
                 getProjectBasePath : function () {
                     var path = player.util.getLoadedScriptPathByFileName('script/apmplayer-all.min.js');
                     if (typeof path === 'undefined') {
-                        path = player.util.getLoadedScriptPathByFileName('script/apmplayer.js');
+                        path = player.util.getLoadedScriptPathByFileName('script/src/apmplayer.js');
                     }
                     return path;
                 },
@@ -1287,6 +1456,16 @@ if (typeof APMPlayerFactory === 'undefined') {
                     if (player.util.getParameterByName('debug') === 'all') {
                         Debug.consoleOnly = false;
                     }
+                },
+                getPreferredMode : function () {
+                    if (player.util.getParameterByName('mode') === 'html5') {
+                        Debug.log('player.util.getPreferredMode() Preferring HTML5.', Debug.type.info);
+                        return 'html5';
+                    } else if (player.util.getParameterByName('mode') === 'flash') {
+                        Debug.log('player.util.getPreferredMode() Preferring Flash.', Debug.type.info);
+                        return 'flash';
+                    }
+                    return false;
                 },
                 addIEFixes : function () {
                     if (!Array.prototype.indexOf) {
@@ -1316,8 +1495,16 @@ if (typeof APMPlayerFactory === 'undefined') {
                  * @methodOf APMPlayer
                  */
                 init : function (settings) {
+                    if (!settings) {
+                        settings = {};
+                    }
+
                     player.util.addIEFixes();
                     player.util.checkDebug();
+                    var mode = player.util.getPreferredMode();
+                    if (mode) {
+                        settings.preferFlash = (mode === 'flash') ? true : false;
+                    }
                     player.audio.init(settings);
                 },
                 /**
@@ -1386,7 +1573,7 @@ if (typeof APMPlayerFactory === 'undefined') {
 
                         return true;
                     } else {
-                        Debug.log('play() invalid playable passed.  must of of type Playable.  did nothing.', Debug.type.error);
+                        Debug.log('play() invalid playable passed. Must be of type Playable.', Debug.type.error);
                         return false;
                     }
                 },
@@ -1465,6 +1652,33 @@ if (typeof APMPlayerFactory === 'undefined') {
                         }
                     } else {
                         Debug.log('seek() no current playable loaded.  nothing to seek.', Debug.type.info);
+                    }
+                },
+                /**
+                 * @name setPosition
+                 * @description moves play head to location in media {@link Playable}.
+                 * @fires Events.type.POSITION_UPDATE will continue to fire after position is updated by setPosition() (see {@link Events}).
+                 * @param {number} milliseconds the point in the media file to setPosition to (in milliseconds).
+                 * @methodOf APMPlayer
+                 */
+                setPosition : function (milliseconds) {
+                    var playable = player.current_playable;
+                    if (playable !== null) {
+                        switch (playable.type) {
+                        case MediaTypes.type.AUDIO:
+                            player.audio.setPosition(playable, milliseconds);
+                            break;
+                        case MediaTypes.type.LIVE_AUDIO:
+                            Debug.log('setPosition() sorry, this item is not setPositionable \'' + playable.identifier + '\', type: \'' + playable.type + '\'', Debug.type.info);
+                            break;
+                        case MediaTypes.type.VIDEO:
+                            break;
+                        default:
+                            Debug.log('setPosition() unsupported type: \'' + playable.type + '\'', Debug.type.error);
+                            break;
+                        }
+                    } else {
+                        Debug.log('setPosition() no current playable loaded.  nothing to setPosition.', Debug.type.info);
                     }
                 },
                 /**
@@ -1579,20 +1793,20 @@ if (typeof APMPlayerFactory === 'undefined') {
                  * @fieldOf APMPlayer
                  */
                 mechanism : player.mechanism,
-                 /**
+                /**
                  * @name mediaTypes
                  * @description reference to supported MediaTypes (currently AUDIO, LIVE_AUDIO)
                  * @example player_ui.playlist.current().type == APMPlayer.mediaTypes.LIVE_AUDIO
                  * @fieldOf APMPlayer
                  */
-                 mediaTypes : MediaTypes.type,
+                mediaTypes : MediaTypes.type,
                 /**
                  * @name state
                  * @description reference to current {@link PlaybackState} object
                  * @example APMPlayer.state.getCurrent() === APMPlayer.state.type.PLAYING;
                  * @fieldOf APMPlayer
                  */
-                 state : player.state,
+                state : player.state,
                 /**
                  * @name base_path
                  * @description returns the base_path of the project, relative to this file.
@@ -1600,7 +1814,13 @@ if (typeof APMPlayerFactory === 'undefined') {
                  * @example http://localhost/apmplayer/1.2/
                  * @fieldOf APMPlayer
                  */
-                 base_path : player.util.getProjectBasePath()
+                base_path : player.util.getProjectBasePath(),
+                /**
+                 * @name version
+                 * @description returns the version of APMPlayer.
+                 * @fieldOf APMPlayer
+                 */
+                version : player.apmplayer_version
             };
         };  //end APMPlayer()
 
@@ -1697,12 +1917,18 @@ if (typeof APMPlayerFactory === 'undefined') {
              * @fires Events.type.PLAYLIST_CURRENT_CHANGE fires upon successful update of current playlist item (see {@link Events}).
              * @methodOf Playlist
              */
-            goto : function (identifier) {
+            goto : function (identifier, start_position) {
                 var j, total_items = this._count();
                 for (j = 0; j < total_items; j += 1) {
                     if (this._items[j].identifier === identifier) {
                         var previous_playable = this.current();
                         this._current_index = j;
+
+                        // Set the start position. This allows overriding on playlist switch.
+                        if (start_position) {
+                            this._items[j].position = start_position;
+                        }
+
                         this.events.trigger(this.events.type.PLAYLIST_CURRENT_CHANGE, previous_playable);
                         return true;
                     }
@@ -1827,7 +2053,7 @@ if (typeof APMPlayerFactory === 'undefined') {
              * @example CustomScheme example:
              * APMPlayerFactory.getPlayable(
              * {
-             *   identifier: 'apm_audio:/being/programs/2011/12/15/20111222_prophetic_imagination_128.mp3'
+             *   identifier: 'apm-audio:/being/programs/2011/12/15/20111222_prophetic_imagination_128.mp3'
              * });
              *
              * (note that in this example, the CustomScheme provides attributes that are pre-defined

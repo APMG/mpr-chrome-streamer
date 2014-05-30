@@ -28,7 +28,7 @@ Full API docs bundled w/ library under /docs/
 
 Required Dependencies
 ---------------------
-* jQuery -- tested and works with version 1.4 - 1.7
+* jQuery -- tested and works with version 1.4 - 1.10
 
 
 Included Dependencies
@@ -46,7 +46,7 @@ file: /script/lib/swf/*
 file: /script/lib/jquery-ui-slider.custom.min.js
 
 * Modernizr -- backwards compatibility for non-HTML5 and CSS3 browsers.
-file: /script/lib/modernizr-2.5.3-custom.min.js
+file: /script/lib/modernizr-custom.min.js
 
 * QUnit -- javascript unit testing framework.
 
